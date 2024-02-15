@@ -6,6 +6,7 @@ import { Color } from "./Color";
 import type { Move } from "./Move";
 
 export let possibleMoves: Writable<Array<Move>> = writable([]);
+export let ghostMoves: Writable<Array<Move>> = writable([]);
 export let selectedPiece: Writable<Point | undefined> = writable(undefined);
 export let gameBoard: Writable<Board | undefined> = writable(undefined);
 export let currentGame: Writable<Game | undefined> = writable(undefined);

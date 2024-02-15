@@ -5,6 +5,7 @@
   import {
     currentGame,
     gameBoard,
+    ghostMoves,
     possibleMoves,
     selectedPiece,
   } from "../globals";
@@ -27,6 +28,7 @@
 
   let isSelected: boolean = false;
   let possibleMove: Move | undefined;
+  let ghostMove: Move | undefined;
 
   selectedPiece.subscribe((value) => {
     if (value == gamePosition) {
@@ -34,6 +36,15 @@
     } else {
       isSelected = false;
     }
+  });
+
+  ghostMoves.subscribe((value) => {
+    // find pos where move is same
+    ghostMove = value.find((move) => {
+      return (
+        move.position.x == gamePosition.x && move.position.y == gamePosition.y
+      );
+    });
   });
 
   possibleMoves.subscribe((value) => {
@@ -61,14 +72,17 @@
     } else {
       selectedPiece.set(undefined);
       possibleMoves.set([]);
+      ghostMoves.set([]);
     }
 
     if (!piece) return;
     selectedPiece.set(gamePosition);
-    let moves = piece.getMoves(board, gamePosition);
+    let moves = piece.getMoves(board, gamePosition, false);
+    let _ghostMoves = piece.getMoves(board, gamePosition, true);
 
     console.log(moves);
     possibleMoves.set(moves);
+    ghostMoves.set(_ghostMoves);
 
     dragging = true;
 
@@ -148,7 +162,11 @@
   >
     <div class="wrapper" bind:this={wrapper}>
       <div class="move-display-wrapper">
-        <div class:possible-move-display={possibleMove != undefined}></div>
+        <div
+          class:possible-move-display={possibleMove != undefined}
+          class:ghost-move-display={possibleMove == undefined &&
+            ghostMove != undefined}
+        ></div>
       </div>
       {#if piece}
         <!-- svelte-ignore a11y-missing-attribute -->
@@ -189,6 +207,20 @@
     transform: translate(-50%, -50%);
 
     background-color: var(--possible-move-color) !important;
+    border-radius: 50%;
+  }
+
+  .ghost-move-display {
+    position: absolute;
+    width: 80%;
+    height: 80%;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    background-color: var(--ghost-move-color) !important;
     border-radius: 50%;
   }
 

@@ -11,14 +11,14 @@ export abstract class Piece {
     hasMoved: boolean = false;
     turnsSinceMoved: number | undefined;
 
-    abstract getMoves(board: Board, position: Point): Array<Move>;
+    abstract getMoves(board: Board, position: Point, ignoreColor: boolean): Array<Move>;
 
-    applySpecialRules(moves: Array<Move>): Move[] {
+    applySpecialRules(moves: Array<Move>, ignoreColor: boolean): Move[] {
         currentGame.update((game) => {
             if (!game) return game;
 
             game.specialRules.forEach((specialRule) => {
-                moves = specialRule(this, moves);
+                moves = specialRule(this, moves, ignoreColor);
             });
 
             return game;

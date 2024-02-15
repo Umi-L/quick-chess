@@ -6,7 +6,7 @@ import { gameBoard, selectedPiece, turn } from "../globals";
 import type { Piece } from "../pieces/Piece";
 
 export abstract class Game {
-    abstract specialRules: Array<(piece: Piece, moves: Array<Move>) => Array<Move>>;
+    abstract specialRules: Array<(piece: Piece, moves: Array<Move>, ignoreColor: boolean) => Array<Move>>;
     abstract board: Board;
     turn: Color = Color.White;
     selected: Point | undefined;

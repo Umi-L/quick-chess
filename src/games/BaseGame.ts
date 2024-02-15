@@ -16,7 +16,12 @@ import { Game } from "./Game";
 
 export class BaseGame extends Game {
 
-    removeOpponentMoves = (piece: Piece, moves: Move[]) => {
+    removeOpponentMoves = (piece: Piece, moves: Move[], ignoreColor: boolean) => {
+
+        if (ignoreColor) {
+            return moves;
+        }
+
         let color: Color;
         myColor.update((value) => {
             color = value;
@@ -29,11 +34,31 @@ export class BaseGame extends Game {
         return moves;
     };
 
-    castle(piece: Piece, moves: Move[]): Move[] {
+    cantPlayMoveIfNotTurn = (piece: Piece, moves: Move[], ignoreColor: boolean) => {
+
+        if (ignoreColor) {
+            return moves;
+        }
+
+        let color: Color = Color.White; // default value
+        myColor.update((value) => {
+            color = value;
+            return value;
+        })
+
+        if (this.turn !== color) {
+            return [];
+        }
+
         return moves;
     }
 
-    specialRules: ((piece: Piece, moves: Move[]) => Move[])[] = [
+    castle(piece: Piece, moves: Move[], ignoreColor: boolean): Move[] {
+        return moves;
+    }
+
+    specialRules: ((piece: Piece, moves: Move[], ignoreColor: boolean) => Move[])[] = [
+        this.cantPlayMoveIfNotTurn,
         this.removeOpponentMoves,
         this.castle,
     ];

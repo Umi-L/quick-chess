@@ -1,10 +1,27 @@
 <script lang="ts">
   import BoardElement from "./lib/Board.svelte";
   import { BaseGame } from "./games/BaseGame";
+  import { currentGame } from "./globals";
+  import MainPage from "./lib/MainPage.svelte";
+  import { colorScheme, SvelteUIProvider } from "@svelteuidev/core";
+  import { onMount } from "svelte";
+  import type { Game } from "./games/Game";
+  colorScheme.set("dark");
+
+  let game: Game;
+  currentGame.subscribe((value) => {
+    game = value!;
+  });
 </script>
 
 <main class="main">
-  <BoardElement game={new BaseGame()} />
+  <SvelteUIProvider withGlobalStyles themeObserver={$colorScheme}>
+    {#if game}
+      <BoardElement {game} />
+    {:else}
+      <MainPage></MainPage>
+    {/if}
+  </SvelteUIProvider>
 </main>
 
 <style>

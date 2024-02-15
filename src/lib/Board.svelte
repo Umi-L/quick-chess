@@ -6,7 +6,7 @@
   import type { Game } from "../games/Game";
   import { Point } from "../Point";
   import { currentGame, gameBoard, isHost, myColor } from "../globals";
-  import { createGame } from "../SupabaseManager";
+  import { createGame, handleGoogleAuth } from "../SupabaseManager";
   import { getOppositeColor } from "../Color";
 
   export let game: Game;
@@ -33,7 +33,7 @@
 
   let cellSize: number;
 
-  onMount(() => {
+  onMount(async () => {
     currentGame.set(game);
     game.init();
 
@@ -53,7 +53,23 @@
 
     isHost.set(true);
     myColor.set(isHost ? game.hostColor : getOppositeColor(game.hostColor));
+
+    await handleGoogleAuth();
     createGame(game);
+
+    window.onresize = () => {
+      let containerBox = container.getBoundingClientRect();
+
+      containerWidth = containerBox.width;
+      containerHeight = containerBox.height;
+
+      cellSize = Math.min(
+        containerWidth / boardState.width,
+        containerHeight / boardState.height
+      );
+
+      updateBoard();
+    };
   });
 
   function generateBoard(): void {
@@ -109,6 +125,14 @@
           height: containerHeight / boardState.height,
         });
       }
+    }
+
+    let portrait = containerWidth < containerHeight;
+
+    if (portrait) {
+      boardElement.style.height = `${boardState.height * cellSize}px`;
+    } else {
+      boardElement.style.width = `${boardState.width * cellSize}px`;
     }
   }
 </script>

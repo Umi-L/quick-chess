@@ -1,6 +1,6 @@
 export interface GameInfo {
     id: string;
-    host: string;
-    other: string | null;
-    gameState: object;
+    host_id: string;
+    other_id: string | null;
+    game_state: object;
 }

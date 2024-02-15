@@ -9,7 +9,7 @@ export abstract class JumpingPiece extends Piece {
 
     abstract offsets: [number, number][];
 
-    getMoves(board: Board, position: Point): Array<Move> {
+    getMoves(board: Board, position: Point, ignoreColor: boolean): Array<Move> {
         let moves: Array<Move> = [];
 
         for (const [dx, dy] of this.offsets) {
@@ -33,7 +33,7 @@ export abstract class JumpingPiece extends Piece {
 
         }
 
-        moves = this.applySpecialRules(moves);
+        moves = this.applySpecialRules(moves, ignoreColor);
 
         return moves;
     }

@@ -15,7 +15,7 @@ export class Pawn extends Piece {
         this.color = color;
     }
 
-    getMoves(board: Board, position: Point): Array<Move> {
+    getMoves(board: Board, position: Point, ignoreColor: boolean): Array<Move> {
         let moves: Array<Move> = [];
         const forward = this.color === Color.White ? 1 : -1;
 
@@ -40,7 +40,7 @@ export class Pawn extends Piece {
             moves.push(new Move(new Point(position.x + 1, position.y + forward), this));
         }
 
-        moves = this.applySpecialRules(moves);
+        moves = this.applySpecialRules(moves, ignoreColor);
 
 
         return moves;
