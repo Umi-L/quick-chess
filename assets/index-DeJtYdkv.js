@@ -7831,6 +7831,7 @@ async function joinGame(id) {
 function serializeGame(gameInstance) {
   return JSON.stringify(gameInstance, (key2, value) => {
     if (value && typeof value === "object") {
+      console.log("serializing", value.constructor.name, "from object", value);
       value.__type = value.constructor.name;
     }
     return value;
