@@ -7826,9 +7826,6 @@ async function joinGame(id) {
   if (result.error) {
     console.error(error);
     return;
-  } else if (result.data === null) {
-    console.error("No game found with that id", result.status);
-    return;
   }
   supabase.channel("games").on("postgres_changes", { event: "INSERT", schema: "public", table: "games" }, handlePayload).subscribe();
   supabase.channel("games").on("postgres_changes", { event: "UPDATE", schema: "public", table: "games" }, handlePayload).subscribe();
