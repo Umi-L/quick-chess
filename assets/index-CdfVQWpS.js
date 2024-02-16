@@ -7831,7 +7831,6 @@ async function joinGame(id) {
 function serializeGame(gameInstance) {
   return JSON.stringify(gameInstance, (key2, value) => {
     if (value && typeof value === "object") {
-      console.log("serializing", value.constructor.name, "from object", value);
       value.__type = value.constructor.name;
     }
     return value;
@@ -7893,7 +7892,10 @@ async function handleGoogleAuth() {
   const session = await supabase.auth.getSession();
   if (session.data.session === null) {
     supabase.auth.signInWithOAuth({
-      provider: "google"
+      provider: "google",
+      options: {
+        redirectTo: "https://umi-l.github.io/quick-chess/"
+      }
     });
   } else {
     console.log(session);
