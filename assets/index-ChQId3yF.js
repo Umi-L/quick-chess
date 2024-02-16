@@ -7866,6 +7866,7 @@ async function updateGame(game) {
   }
 }
 function handlePayload(payload) {
+  console.log("payload with id found", payload.new.id);
   if (payload.new.id === gameID) {
     let gameState = payload.new.game_state;
     handleGameState(gameState);
