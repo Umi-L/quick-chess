@@ -7820,9 +7820,11 @@ async function joinGame(id) {
   isHost.set(false);
   myColor.set(getOppositeColor(newGame.hostColor));
   gameID = id;
-  let { error: updateError } = await supabase.from("games").update({ other_id: session.data.session.user.id }).eq("id", id);
-  if (updateError) {
-    console.error(updateError);
+  console.log("updating other:id to: " + session.data.session.user.id);
+  let result = await supabase.from("games").update({ other_id: session.data.session.user.id }).eq("id", id);
+  console.log("got result", result);
+  if (result.error) {
+    console.error(error);
     return;
   }
   supabase.channel("games").on("postgres_changes", { event: "INSERT", schema: "public", table: "games" }, handlePayload).subscribe();
