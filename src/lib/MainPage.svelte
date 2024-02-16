@@ -3,6 +3,8 @@
   import { Game } from "../games/Game";
   import { BaseGame } from "../games/BaseGame";
   import { currentGame } from "../globals";
+  import { onMount } from "svelte";
+  import { createGame, handleGoogleAuth, joinGame } from "../SupabaseManager";
 
   interface GameType {
     name: string;
@@ -16,15 +18,36 @@
       name: "Base Chess",
       description: "The classic game of chess on an 8x8 board",
       img: "./chess.jpg",
-      builder: () => new BaseGame(),
+      builder: () => {
+        let game = new BaseGame();
+        game.init();
+        return game;
+      },
     },
     {
       name: "Standard Chess",
       description: "The classic game of chess on an 8x8 board",
       img: "./chess.jpg",
-      builder: () => new BaseGame(),
+      builder: () => {
+        let game = new BaseGame();
+        game.init();
+        return game;
+      },
     },
   ];
+
+  onMount(async () => {
+    await handleGoogleAuth();
+
+    // if url param id is present, join game
+    let urlParams = new URLSearchParams(window.location.search);
+    let id = urlParams.get("id");
+
+    if (id) {
+      console.log("Joining game with id: " + id);
+      await joinGame(id);
+    }
+  });
 </script>
 
 <div class="main-page">
@@ -51,7 +74,9 @@
               color="teal"
               fullSize
               on:click={() => {
-                currentGame.set(gameType.builder(8, 8));
+                let game = gameType.builder(8, 8);
+                currentGame.set(game);
+                createGame(game);
               }}>Create Game</Button
             >
           </Card.Section>

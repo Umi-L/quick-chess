@@ -15,4 +15,25 @@ export class Board {
     pointInBounds(point: Point): boolean {
         return point.x < this.width && point.x >= 0 && point.y < this.height && point.y >= 0;
     }
+
+    printBoard() {
+        let final = "";
+        // foreach row and column
+        for (let i = 0; i < this.width; i++) {
+            let row = "";
+            for (let j = 0; j < this.height; j++) {
+                const piece = this.board[i][j];
+                if (piece !== null) {
+
+                    let turnsSinceMoved = piece.turnsSinceMoved ?? " ";
+                    row += piece.type + piece.color + turnsSinceMoved + " ";
+                } else {
+                    row += "   ";
+                }
+            }
+            final += row + "\n";
+        }
+
+        console.log(final);
+    }
 }

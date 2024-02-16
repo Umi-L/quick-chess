@@ -77,8 +77,8 @@
 
     if (!piece) return;
     selectedPiece.set(gamePosition);
-    let moves = piece.getMoves(board, gamePosition, false);
-    let _ghostMoves = piece.getMoves(board, gamePosition, true);
+    let moves = piece.getMoves(game, board, gamePosition, false, false);
+    let _ghostMoves = piece.getMoves(game, board, gamePosition, true, false);
 
     console.log(moves);
     possibleMoves.set(moves);

@@ -1,6 +1,6 @@
 import { Board } from "../Board";
 import { Color } from "../Color";
-import type { Move } from "../Move";
+import { Move } from "../Move";
 import { Bishop } from "../pieces/Bishop";
 import { King } from "../pieces/King";
 import { Knight } from "../pieces/Knight";
@@ -8,62 +8,18 @@ import { Pawn } from "../pieces/Pawn";
 import { Piece } from "../pieces/Piece";
 import { Queen } from "../pieces/Queen";
 import { Rook } from "../pieces/Rook";
-import type { Point } from "../Point";
+import { Point } from "../Point";
 import { gameBoard, myColor, possibleMoves, selectedPiece } from "../globals";
 import { Game } from "./Game";
+import { updateGame } from "../SupabaseManager";
+import { PieceType } from "../PieceType";
 
 
 
 export class BaseGame extends Game {
+    specialRules: ((piecePosition: Point, piece: Piece, moves: Move[], ignoreColor: boolean) => Move[])[] = [];
 
-    removeOpponentMoves = (piece: Piece, moves: Move[], ignoreColor: boolean) => {
-
-        if (ignoreColor) {
-            return moves;
-        }
-
-        let color: Color;
-        myColor.update((value) => {
-            color = value;
-            return value;
-        })
-
-        // remove moves that are of the opposing color
-        moves = moves.filter(move => move.piece.color === color);
-
-        return moves;
-    };
-
-    cantPlayMoveIfNotTurn = (piece: Piece, moves: Move[], ignoreColor: boolean) => {
-
-        if (ignoreColor) {
-            return moves;
-        }
-
-        let color: Color = Color.White; // default value
-        myColor.update((value) => {
-            color = value;
-            return value;
-        })
-
-        if (this.turn !== color) {
-            return [];
-        }
-
-        return moves;
-    }
-
-    castle(piece: Piece, moves: Move[], ignoreColor: boolean): Move[] {
-        return moves;
-    }
-
-    specialRules: ((piece: Piece, moves: Move[], ignoreColor: boolean) => Move[])[] = [
-        this.cantPlayMoveIfNotTurn,
-        this.removeOpponentMoves,
-        this.castle,
-    ];
-
-    board: Board;
+    board!: Board;
 
     init(): Board {
         this.board = new Board(8, 8);
@@ -101,15 +57,36 @@ export class BaseGame extends Game {
         return this.board;
     }
 
+    // function to be called when the game is loaded from the database re-initialize things that are lossy in json
+    onLoad(): void {
+        this.specialRules = [
+            this.cantPlayMoveIfNotTurn,
+            this.removeOpponentMoves,
+            this.castle,
+            // this.check,
+        ]
+    }
+
     constructor() {
         super();
-        this.board = this.init();
+
+        console.log("BaseGame constructor");
+
+        this.specialRules = [
+            this.cantPlayMoveIfNotTurn,
+            this.removeOpponentMoves,
+            this.castle,
+            // this.check,
+        ]
     }
 
     makeMove(move: Move): Board {
         if (move.callback) {
             move.callback();
-            return this.board;
+
+            if (move.overrideAllBehavior) {
+                return this.board;
+            }
         }
 
         if (this.selected === undefined) {
@@ -123,26 +100,13 @@ export class BaseGame extends Game {
                 this.board!.board[move.position.x][move.position.y] = piece;
                 piece.hasMoved = true;
 
-                // foreach piece in the board
-                for (let i = 0; i < this.board!.width; i++) {
-                    for (let j = 0; j < this.board!.height; j++) {
-                        const piece = this.board!.board[i][j];
-                        if (piece !== null) {
-                            if (piece.turnsSinceMoved !== undefined) {
-                                piece.turnsSinceMoved++;
-                            }
-                        }
-                    }
-                }
+                this.updateTimeSinceMoved();
 
                 piece.turnsSinceMoved = 0;
 
                 this.board!.board[this.selected.x][this.selected.y] = null;
-                selectedPiece.set(undefined);
-                possibleMoves.set([]);
-                this.flipTurn();
 
-
+                this.updateValues();
             }
         }
 
@@ -151,4 +115,31 @@ export class BaseGame extends Game {
         return this.board!;
     }
 
+    simulateMove(move: Move, piecePosition: Point): Board {
+
+        console.log("simulateMove");
+
+        if (move.callback) {
+            move.callback();
+
+            if (move.overrideAllBehavior) {
+                return this.board;
+            }
+        }
+
+
+        if (move.piece !== null) {
+            this.board!.board[move.position.x][move.position.y] = move.piece;
+            move.piece.hasMoved = true;
+
+            this.updateTimeSinceMoved();
+
+            move.piece.turnsSinceMoved = 0;
+
+            this.board!.board[piecePosition.x][piecePosition.y] = null;
+        }
+
+
+        return this.board!;
+    }
 }

@@ -6,6 +6,7 @@
   import { colorScheme, SvelteUIProvider } from "@svelteuidev/core";
   import { onMount } from "svelte";
   import type { Game } from "./games/Game";
+  import GamePage from "./lib/GamePage.svelte";
   colorScheme.set("dark");
 
   let game: Game;
@@ -17,7 +18,7 @@
 <main class="main">
   <SvelteUIProvider withGlobalStyles themeObserver={$colorScheme}>
     {#if game}
-      <BoardElement {game} />
+      <GamePage />
     {:else}
       <MainPage></MainPage>
     {/if}

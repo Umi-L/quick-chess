@@ -6,8 +6,7 @@
   import type { Game } from "../games/Game";
   import { Point } from "../Point";
   import { currentGame, gameBoard, isHost, myColor } from "../globals";
-  import { createGame, handleGoogleAuth } from "../SupabaseManager";
-  import { getOppositeColor } from "../Color";
+  import { Color, getOppositeColor } from "../Color";
 
   export let game: Game;
   let boardState: Board;
@@ -20,7 +19,10 @@
     if (boardLoaded) updateBoard();
   });
 
-  let isWhite: boolean = true;
+  let isWhite: boolean;
+  myColor.subscribe((value) => {
+    isWhite = value == Color.White;
+  });
 
   let container: HTMLDivElement;
   let boardElement: HTMLDivElement;
@@ -34,8 +36,7 @@
   let cellSize: number;
 
   onMount(async () => {
-    currentGame.set(game);
-    game.init();
+    gameBoard.set(game.board);
 
     let containerBox = container.getBoundingClientRect();
 
@@ -50,12 +51,6 @@
     );
 
     generateBoard();
-
-    isHost.set(true);
-    myColor.set(isHost ? game.hostColor : getOppositeColor(game.hostColor));
-
-    await handleGoogleAuth();
-    createGame(game);
 
     window.onresize = () => {
       let containerBox = container.getBoundingClientRect();
@@ -142,11 +137,6 @@
 </div>
 
 <style>
-  .container {
-    width: 100%;
-    height: 100%;
-  }
-
   .board {
     background-color: red;
   }
@@ -154,5 +144,17 @@
   :global(.chess-board-row) {
     display: flex;
     flex-direction: row;
+  }
+
+  @media (orientation: portrait) {
+    .container {
+      height: 100%;
+    }
+  }
+
+  @media (orientation: landscape) {
+    .container {
+      width: 100%;
+    }
   }
 </style>

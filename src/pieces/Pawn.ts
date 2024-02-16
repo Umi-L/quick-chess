@@ -3,6 +3,8 @@ import { Color } from "../Color";
 import { Move } from "../Move";
 import { PieceType } from "../PieceType";
 import { Point } from "../Point";
+import type { Game } from "../games/Game";
+import { currentGame } from "../globals";
 import { Piece } from "./Piece";
 
 
@@ -15,7 +17,7 @@ export class Pawn extends Piece {
         this.color = color;
     }
 
-    getMoves(board: Board, position: Point, ignoreColor: boolean): Array<Move> {
+    getMoves(game: Game, board: Board, position: Point, ignoreColor: boolean, simulated: boolean): Array<Move> {
         let moves: Array<Move> = [];
         const forward = this.color === Color.White ? 1 : -1;
 
@@ -30,17 +32,53 @@ export class Pawn extends Piece {
         }
 
 
+        // capture to the left or right
+        let captureLogic = (offset: number) => {
+            if (board.pointInBounds(new Point(position.x + offset, position.y + forward)) && board.board[position.x + offset][position.y + forward] != null && board.board[position.x + offset][position.y + forward]!.color !== this.color) {
+                moves.push(new Move(new Point(position.x + offset, position.y + forward), this));
+            }
+        }
+
+
         // diagonal capture to the left
-        if (board.pointInBounds(new Point(position.x - 1, position.y + forward)) && board.board[position.x - 1][position.y + forward] != null && board.board[position.x - 1][position.y + forward]!.color !== this.color) {
-            moves.push(new Move(new Point(position.x - 1, position.y + forward), this));
-        }
-
+        captureLogic(-1);
         // diagonal capture to the right
-        if (board.pointInBounds(new Point(position.x + 1, position.y + forward)) && board.board[position.x + 1][position.y + forward] != null && board.board[position.x + 1][position.y + forward]!.color !== this.color) {
-            moves.push(new Move(new Point(position.x + 1, position.y + forward), this));
+        captureLogic(1);
+
+
+
+        // en passant
+        // if pawn is next to another pawn
+        let enPassantLogic = (offset: number) => {
+            if (board.pointInBounds(new Point(position.x + offset, position.y))) {
+                const other = board.board[position.x + offset][position.y];
+                if (other && other.type === PieceType.Pawn && other.color !== this.color) {
+                    if (other.turnsSinceMoved === 0) {
+                        let movePos = new Point(position.x + offset, position.y + forward);
+
+                        board.pointInBounds(movePos);
+
+                        // if no piece is there, add the move
+                        if (board.board[movePos.x][movePos.y] === null) {
+                            moves.push(new Move(movePos, this, () => {
+
+                                board.board[position.x + offset][position.y] = null;
+
+
+                            }));
+                        }
+                    }
+                }
+            }
         }
 
-        moves = this.applySpecialRules(moves, ignoreColor);
+        // en passant to the left
+        enPassantLogic(-1);
+        // en passant to the right
+        enPassantLogic(1);
+
+
+        moves = this.applySpecialRules(game, position, moves, ignoreColor, simulated);
 
 
         return moves;

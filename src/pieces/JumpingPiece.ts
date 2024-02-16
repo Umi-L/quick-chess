@@ -3,13 +3,14 @@ import type { Color } from "../Color";
 import { Move } from "../Move";
 import type { PieceType } from "../PieceType";
 import { Point } from "../Point";
+import type { Game } from "../games/Game";
 import { Piece } from "./Piece";
 
 export abstract class JumpingPiece extends Piece {
 
     abstract offsets: [number, number][];
 
-    getMoves(board: Board, position: Point, ignoreColor: boolean): Array<Move> {
+    getMoves(game: Game, board: Board, position: Point, ignoreColor: boolean, simulated: boolean): Array<Move> {
         let moves: Array<Move> = [];
 
         for (const [dx, dy] of this.offsets) {
@@ -33,7 +34,7 @@ export abstract class JumpingPiece extends Piece {
 
         }
 
-        moves = this.applySpecialRules(moves, ignoreColor);
+        moves = this.applySpecialRules(game, position, moves, ignoreColor, simulated);
 
         return moves;
     }
